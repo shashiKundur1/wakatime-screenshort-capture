@@ -1,0 +1,22 @@
+# System files
+__pycache__/
+*.pyc
+.DS_Store
+
+# Virtual Environment
+venv/
+env/
+
+# Secrets & Personal Data (NEVER UPLOAD THESE)
+auth.json
+token.json
+.env
+
+# Dynamic Output
+screenshots/
+Time_update_temp.xlsx
+
+# Note: We usually ignore credentials.json too, but if you want 
+# your team to use YOUR app id, you might choose to commit it.
+# Ideally, distribute credentials.json privately (Slack/Email).
+credentials.json
