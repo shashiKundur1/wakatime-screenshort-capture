@@ -7,10 +7,9 @@ from automation import OfficeAutomator
 # --- 1. CONFIGURATION & PHOSPHOR ICONS ---
 st.set_page_config(page_title="WakaTime Automator", page_icon="⚡", layout="centered")
 
-# Inject Phosphor Icons, GSAP & Custom CSS
+# Inject Phosphor Icons & Custom CSS
 st.markdown("""
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <style>
         /* --- GLOBAL THEME --- */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
@@ -124,27 +123,46 @@ st.markdown("""
             border: 1px solid rgba(255, 87, 34, 0.3);
         }
 
-        /* --- SUCCESS ANIMATION --- */
+        /* --- SUCCESS ANIMATION (Pure CSS) --- */
+        @keyframes bounceIn {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.2); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            0% { transform: translateY(20px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
         .success-box {
             text-align: center;
-            padding: 1.5rem;
+            padding: 1.2rem;
             background: rgba(46, 204, 113, 0.08);
             border: 1px solid rgba(46, 204, 113, 0.3);
             border-radius: 12px;
-            margin-top: 1rem;
+            margin-top: 0.8rem;
         }
 
         .success-icon {
             font-size: 2.5rem;
             color: #2ecc71;
-            opacity: 0;
+            display: inline-block;
+            animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
         }
 
         .success-text {
             font-size: 1.1rem;
             font-weight: 600;
             color: #2ecc71;
-            margin: 0.5rem 0;
+            margin: 0.4rem 0;
+            animation: slideUp 0.5s ease-out 0.3s forwards;
             opacity: 0;
         }
 
@@ -152,6 +170,7 @@ st.markdown("""
             font-size: 0.85rem;
             color: rgba(255,255,255,0.6);
             font-style: italic;
+            animation: fadeIn 0.6s ease-out 0.6s forwards;
             opacity: 0;
         }
 
@@ -320,50 +339,10 @@ else:
             progress_bar.progress(100, text="Done!")
             st.markdown("""
                 <div class="success-box">
-                    <i class="ph-fill ph-check-circle success-icon" id="successIcon"></i>
-                    <div class="success-text" id="successText">Update Successful</div>
-                    <div class="fun-text" id="funText">Another day, another spreadsheet conquered.</div>
+                    <i class="ph-fill ph-check-circle success-icon"></i>
+                    <div class="success-text">Update Successful</div>
+                    <div class="fun-text">Another day, another spreadsheet conquered.</div>
                 </div>
-                <script>
-                    setTimeout(() => {
-                        if (typeof gsap !== 'undefined') {
-                            gsap.to("#successIcon", {
-                                opacity: 1,
-                                scale: 1.2,
-                                duration: 0.4,
-                                ease: "back.out(1.7)"
-                            });
-                            gsap.to("#successIcon", {
-                                scale: 1,
-                                duration: 0.3,
-                                delay: 0.4,
-                                ease: "elastic.out(1, 0.5)"
-                            });
-                            gsap.to("#successText", {
-                                opacity: 1,
-                                y: 0,
-                                duration: 0.5,
-                                delay: 0.3,
-                                ease: "back.out(1.7)"
-                            });
-                            gsap.from("#successText", {
-                                y: 20,
-                                duration: 0.5,
-                                delay: 0.3
-                            });
-                            gsap.to("#funText", {
-                                opacity: 1,
-                                duration: 0.6,
-                                delay: 0.6,
-                                ease: "power2.out"
-                            });
-                        } else {
-                            document.getElementById('successIcon').style.opacity = 1;
-                            document.getElementById('successText').style.opacity = 1;
-                            document.getElementById('funText').style.opacity = 1;
-                        }
-                    }, 100);
-                </script>
             """, unsafe_allow_html=True)
             
         except Exception as e:
