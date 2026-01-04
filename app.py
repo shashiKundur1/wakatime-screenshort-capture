@@ -8,7 +8,7 @@ st.set_page_config(page_title="WakaTime Automator", page_icon="🚀", layout="ce
 
 # --- COOKIE MANAGER SETUP ---
 # This tool allows us to save/load data from your browser's real cookies
-@st.cache_resource(experimental_allow_widgets=True)
+@st.cache_resource
 def get_manager():
     return stx.CookieManager()
 
