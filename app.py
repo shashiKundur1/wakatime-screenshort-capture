@@ -7,7 +7,7 @@ from automation import OfficeAutomator
 # --- PAGE CONFIG ---
 st.set_page_config(page_title="WakaTime Automator", page_icon="🚀", layout="centered")
 
-# --- SESSION STATE SETUP (Instant Memory) ---
+# --- SESSION STATE INITIALIZATION ---
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 if "waka_session" not in st.session_state:
@@ -27,24 +27,25 @@ cookie_manager = get_manager()
 def logger(message):
     st.session_state.logs.append(f"{datetime.datetime.now().strftime('%H:%M:%S')} - {message}")
 
-# --- MAIN UI ---
+# --- MAIN LOGIC ---
 st.title("🚀 Office Automator")
 
-# 1. READ COOKIES (The slow persistent storage)
-# We check if cookies exist to auto-login returning users
-cookie_session = cookie_manager.get(cookie="waka_session")
-cookie_folder = cookie_manager.get(cookie="drive_folder")
+# 1. FETCH ALL COOKIES (More reliable than fetching one by one)
+# We accept that on the very first split-second load, this might be empty.
+all_cookies = cookie_manager.get_all()
+cookie_session = all_cookies.get("waka_session")
+cookie_folder = all_cookies.get("drive_folder")
 
-# 2. SYNC LOGIC: If cookies exist, force login in session state
+# 2. AUTO-LOGIN CHECK
+# If we see cookies in the browser, but Session State is empty, sync them.
 if cookie_session and cookie_folder:
     if not st.session_state.logged_in:
         st.session_state.waka_session = cookie_session
         st.session_state.drive_folder = cookie_folder
         st.session_state.logged_in = True
-        # Silent rerun to refresh UI immediately
         st.rerun()
 
-# --- VIEW 1: LOGIN SCREEN ---
+# --- VIEW 1: LOGIN FORM ---
 if not st.session_state.logged_in:
     st.info("👋 Welcome! Please log in to setup your automation.")
     
@@ -57,34 +58,36 @@ if not st.session_state.logged_in:
             if not user_cookie or not folder_id:
                 st.error("❌ Please fill in both fields.")
             else:
-                # A. Update INSTANT Memory (So UI updates now)
+                # UPDATE STATE INSTANTLY
                 st.session_state.waka_session = user_cookie
                 st.session_state.drive_folder = folder_id
                 st.session_state.logged_in = True
                 
-                # B. Update SLOW Cookie (So it remembers you tomorrow)
-                expires = datetime.datetime.now() + datetime.timedelta(days=30)
-                cookie_manager.set("waka_session", user_cookie, expires_at=expires, key="set_waka")
-                cookie_manager.set("drive_folder", folder_id, expires_at=expires, key="set_drive")
+                # SAVE COOKIES (Fixed Expiration Logic)
+                # We use a explicit future date to avoid timezone bugs
+                future_date = datetime.datetime.now() + datetime.timedelta(days=30)
                 
-                st.success("✅ Login Verified! Loading...")
-                time.sleep(1) # Tiny pause to let cookies settle
+                cookie_manager.set("waka_session", user_cookie, expires_at=future_date, key="set_waka")
+                cookie_manager.set("drive_folder", folder_id, expires_at=future_date, key="set_drive")
+                
+                st.success("✅ Login Saved! Reloading...")
+                time.sleep(1) 
                 st.rerun()
 
 # --- VIEW 2: AUTOMATION DASHBOARD ---
 else:
-    # Header with partial Folder ID
+    # Display current user (masked)
     safe_folder = str(st.session_state.drive_folder)[:5] + "..."
     st.success(f"✅ Connected (Folder: {safe_folder})")
     
-    # Logout
+    # Logout Button
     if st.button("🔄 Logout / Reset"):
-        # Clear Instant Memory
+        # Clear Memory
         st.session_state.logged_in = False
         st.session_state.waka_session = ""
         st.session_state.drive_folder = ""
         
-        # Clear Cookies
+        # Clear Browser Cookies
         cookie_manager.delete("waka_session", key="del_waka")
         cookie_manager.delete("drive_folder", key="del_drive")
         st.rerun()
@@ -104,7 +107,7 @@ else:
     if st.button("⚡ Run Automation", type="primary"):
         st.info("⏳ Starting Automation...")
         
-        # USE CREDENTIALS FROM SESSION STATE
+        # Use credentials from memory
         bot = OfficeAutomator(logger=logger)
         bot.user_cookie = st.session_state.waka_session
         bot.folder_id = st.session_state.drive_folder
