@@ -7,8 +7,8 @@ from automation import OfficeAutomator
 st.set_page_config(page_title="WakaTime Automator", page_icon="🚀", layout="centered")
 
 # --- COOKIE MANAGER SETUP ---
-# This tool allows us to save/load data from your browser's real cookies
-@st.cache_resource
+# FIX: Removed @st.cache_resource completely. 
+# We instantiate the manager directly.
 def get_manager():
     return stx.CookieManager()
 
@@ -52,7 +52,7 @@ else:
     st.success(f"✅ Logged in (Folder: {stored_folder[:5]}...)")
     
     # Logout Button
-    if st.button("bs Logout / Reset"):
+    if st.button("🔄 Logout / Reset"):
         cookie_manager.delete("waka_session")
         cookie_manager.delete("drive_folder")
         st.rerun()
