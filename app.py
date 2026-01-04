@@ -7,8 +7,6 @@ from automation import OfficeAutomator
 st.set_page_config(page_title="WakaTime Automator", page_icon="🚀", layout="centered")
 
 # --- COOKIE MANAGER SETUP ---
-# FIX: Removed @st.cache_resource completely. 
-# We instantiate the manager directly.
 def get_manager():
     return stx.CookieManager()
 
@@ -41,20 +39,23 @@ if not stored_session:
             if not user_cookie or not folder_id:
                 st.error("Please fill in both fields.")
             else:
-                # SAVE TO BROWSER COOKIES (Expires in 30 days)
-                cookie_manager.set("waka_session", user_cookie, expires_at=datetime.datetime.now() + datetime.timedelta(days=30))
-                cookie_manager.set("drive_folder", folder_id, expires_at=datetime.datetime.now() + datetime.timedelta(days=30))
+                # FIX: Added unique keys ("set_waka", "set_drive") to prevent duplicate error
+                expires = datetime.datetime.now() + datetime.timedelta(days=30)
+                cookie_manager.set("waka_session", user_cookie, expires_at=expires, key="set_waka")
+                cookie_manager.set("drive_folder", folder_id, expires_at=expires, key="set_drive")
+                
                 st.success("✅ Login Saved! Refreshing...")
                 st.rerun()
 
 # STATE: LOGGED IN
 else:
-    st.success(f"✅ Logged in (Folder: {stored_folder[:5]}...)")
+    st.success(f"✅ Logged in (Folder: {str(stored_folder)[:5]}...)")
     
     # Logout Button
     if st.button("🔄 Logout / Reset"):
-        cookie_manager.delete("waka_session")
-        cookie_manager.delete("drive_folder")
+        # FIX: Added unique keys here too
+        cookie_manager.delete("waka_session", key="del_waka")
+        cookie_manager.delete("drive_folder", key="del_drive")
         st.rerun()
 
     st.divider()
