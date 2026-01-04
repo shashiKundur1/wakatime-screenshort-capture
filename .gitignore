@@ -20,3 +20,5 @@ Time_update_temp.xlsx
 # your team to use YOUR app id, you might choose to commit it.
 # Ideally, distribute credentials.json privately (Slack/Email).
 credentials.jsontoken.json
+token.json
+credentials.json
